@@ -67,10 +67,12 @@
 (defn fill-knapsack
   "Fill knapsack based on dolls from dealer"
   [dolls max-weight]
-  (let [num_of_dolls (count dolls)
+  (if (vector? dolls)
+    (let [num_of_dolls (count dolls)
         results (in-memory-pick-dolls dolls (- num_of_dolls 1) max-weight)]
-    (println "Results:")
-    (doseq [result results] (prn result))
+      (println "Results:")
+      (doseq [result results] (prn result)))
+    (do (println "Input is not a vector"))
     )
 )
 
