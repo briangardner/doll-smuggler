@@ -15,13 +15,11 @@
   "Knapsack algorithm"
  [dolls index max-weight]
   (
-    ;(println "Made it here")
     if (or (= 0 max-weight) (< index 0))
     [[] 0]
     (let [doll (get dolls index)
           weight (get doll :weight)
           value (get doll :value)]
-      ;(println dolls doll index weight value)
       (if (> weight max-weight)
         (in-memory-pick-dolls dolls (- index 1) max-weight)
         (let [[dolls_if_skipping value_if_skipping]
