@@ -150,5 +150,5 @@
                  (is(= empty-results-set (fill-knapsack [] 0)))) 
         (testing "Test with non-number input"
                  (is(= nil (fill-knapsack good-test-dolls "abc")))))))
-
+(run-all-tests)
 (run-solution)
