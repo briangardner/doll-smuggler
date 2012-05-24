@@ -18,13 +18,15 @@
   "Knapsack algorithm"
  [dolls index max-weight]
   (
-    if (or (= 0 max-weight) (< index 0))
-    [[] 0]
+    if (or (>= 0 max-weight) (< index 0)) ;if we're at our weight is at or below zero, or we have no elements
+    [[] 0] ; return an empty set and 0
     (let [doll (get dolls index)
           weight (get doll :weight)
           value (get doll :value)]
+      
       (if (> weight max-weight)
-        (in-memory-pick-dolls dolls (- index 1) max-weight)
+        (in-memory-pick-dolls dolls (- index 1) max-weight) ;don't bother processing, doll heaver than we can take
+        
         (let [[dolls_if_skipping value_if_skipping]
               (in-memory-pick-dolls dolls (- index 1) max-weight)
               [dolls_if_keeping value_if_keeping]
@@ -32,9 +34,7 @@
           ; note that dolls_if_keeping and value_if_keeping do not yet include
           ; the current doll
           (if (> (+ value_if_keeping value) value_if_skipping)
-            ; keep the doll
-            [(conj dolls_if_keeping doll) (+ value_if_keeping value)]
-            ; skip the doll
+            [(conj dolls_if_keeping doll) (+ value_if_keeping value)] ;add current doll
             [dolls_if_skipping value_if_skipping]))))))
 
 ;cache the previous runs of pick-dolls in memory
@@ -71,9 +71,12 @@
   "Fill knapsack based on dolls from dealer and maximum weight"
   [dolls max-weight]
   (if(vector? dolls)
-    (let [dolls (get-vector dolls)
+    (if(number? max-weight)
+      
+      (let [dolls (get-vector dolls)
           num_of_dolls (count dolls)]
         (in-memory-pick-dolls dolls (- num_of_dolls 1) max-weight))
+      (do (println "Input max weight is not numeric")))
     (do (println "Input doll data is not a vector or max weight is not integer "))
     )
 )
@@ -81,12 +84,9 @@
 ;Run this to input your own data.
 (defn run-solution[]
    (
-     ;let [good-test-weight 50
-     ;     good-test-dolls ["Brian" 20 10]
-     ;     results (fill-knapsack good-test-dolls good-test-weight)]
-     let [old-woman (get-max-weight)
+     let [grandma (get-max-weight)
          inventory (get-dealer-inventory)
-         results (fill-knapsack inventory old-woman)]
+         results (fill-knapsack inventory grandma)]
      (println "Results:")
      (println "Dolls selected: ")
      (doseq [result (first results)] 
@@ -99,6 +99,7 @@
     
     (let [good-test-weight 50
           good-test-dolls ['Brian 20 10]
+          expected-good-value 10
           large-test-data [ 'luke 9 150 
                             'anthony 13 35
                             'candice   153   200
@@ -121,33 +122,39 @@
 														'tory       18    12
 														'sally       4    50
 														'babe       30    10]
-          expected-good-value 10
+          large-test-weight 400
+          large-expected-data ['luke        9   150 
+                               'anthony    13    35
+                               'candice   153   200
+                               'dorothy    50   160
+                               'puppy      15    60
+                               'randal     27    60
+                               'marc       11    70
+                               'grumpkin   42    70
+                               'dusty      43    75
+                               'grumpy     22    80
+                               'eddie       7    20
+                               'sally       4    50]
+          large-expected-value 1030
+          zero-expected-count 0
+          
       ]
       (testing "Test suite"
-        ;testing to make sure true is true
-        ;silly test, but just making sure that I can call testing
         (testing "Testing"
-             (is (= 1 1)))
-        ;simple good data test
+             (is (= 1 1))) ;silly test, but a sanity check and  making sure that I can call testing
         (testing "Test with small set of good data"
-               (is (= expected-good-value (last (fill-knapsack good-test-dolls good-test-weight))))
-               (is (= 1 (count(first(fill-knapsack good-test-dolls good-test-weight)))))
-                    )
+                 (is (= [(get-vector good-test-dolls) expected-good-value] (fill-knapsack good-test-dolls good-test-weight))))
         (testing "Test with large amount of data"
-                 (is(= 1030 (last(fill-knapsack large-test-data 400))))
-                 (is(= 12 (count(first(fill-knapsack large-test-data 400))))))
+                 (is(= [(get-vector large-expected-data) large-expected-value]
+                       (fill-knapsack large-test-data large-test-weight))))
         (testing "Test with negative weight"
-                 (is(= 0 (last(fill-knapsack good-test-dolls -4)))))
+                 (is(= [[] 0] (fill-knapsack good-test-dolls -4))))
         (testing "Test with non-vector input"
                  (is(= nil (fill-knapsack -1 123))))
+        (testing "Test with empty set and 0 weight"
+                 (is(= [[] 0] (fill-knapsack [] 0)))) 
         (testing "Test with non-number input"
-                 (is(= 123 (fill-knapsack good-test-dolls "abc"))))
-      )
-      
-    ))
+                 (is(= nil (fill-knapsack good-test-dolls "abc"))))
+      )))
 
-
-
-;(test-suite)
-;(run-solution) ;Run the solution
 
