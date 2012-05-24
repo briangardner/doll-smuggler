@@ -94,28 +94,28 @@
     (let [good-test-weight 50
           good-test-dolls ['Brian 20 10]
           expected-good-value 10
-          large-test-data [ 'luke        9   150 
-                            'anthony    13    35
-                            'candice   153   200
-														'dorothy    50   160
-														'puppy      15    60
-														'thomas     68    45
-														'randal     27    60
-														'april      39    40
-														'nancy      23    30
-														'bonnie     52    10
-														'marc       11    70
-														'kate       32    30
-														'tbone      24    15
-														'tranny     48    10
-														'uma        73    40
-														'grumpkin   42    70
-														'dusty      43    75
-														'grumpy     22    80
-														'eddie       7    20
-														'tory       18    12
-														'sally       4    50
-														'babe       30    10]
+          large-test-data ['luke        9   150
+                           'anthony    13    35
+                           'candice   153   200
+                           'dorothy    50   160
+                           'puppy      15    60
+                           'thomas     68    45
+                           'randal     27    60
+                           'april      39    40
+                           'nancy      23    30
+                           'bonnie     52    10
+                           'marc       11    70
+                           'kate       32    30
+                           'tbone      24    15
+                           'tranny     48    10
+                           'uma        73    40
+                           'grumpkin   42    70
+                           'dusty      43    75
+                           'grumpy     22    80
+                           'eddie       7    20
+                           'tory       18    12
+                           'sally       4    50
+                           'babe       30    10]
           large-test-weight 400
           large-expected-data ['sally       4    50
                                'eddie       7    20
