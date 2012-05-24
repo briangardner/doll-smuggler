@@ -1,11 +1,13 @@
 ;Solution to Doll Smuggling Problem
+;Written By: Brian Gardner
 ;Forked from: https://github.com/micahalles/doll-smuggler
 ;Started: 21-MAY-2012
-;Finished: ??
+;Finished: 23-MAY-2012
 
-;structure of the doll input
 (ns dollsmuggler
   (:use clojure.test))
+
+;structure of the doll input
 (defstruct Doll :name :weight :value)
 
 ;doing a quick declare here so I can reference it in my pick-dolls function
@@ -13,29 +15,24 @@
 (declare in-memory-pick-dolls)
 
 ;Knapsack algorithm
-;Recursively calls itself.  If the 
+;derived from http://en.wikipedia.org/wiki/Knapsack_problem#Dynamic_Programming_Algorithm
 (defn pick-dolls
   "Knapsack algorithm"
- [dolls index max-weight]
-  (
-    if (or (>= 0 max-weight) (< index 0)) ;if we're at our weight is at or below zero, or we have no elements
+ [dolls max-weight]
+  (if (or (>= 0 max-weight) (= 0 (count dolls))) ;if we're at our weight is at or below zero, or we have no elements
     [[] 0] ; return an empty set and 0
-    (let [doll (get dolls index)
+    (let [doll (first dolls)
           weight (get doll :weight)
           value (get doll :value)]
-      
       (if (> weight max-weight)
-        (in-memory-pick-dolls dolls (- index 1) max-weight) ;don't bother processing, doll heaver than we can take
-        
-        (let [[dolls_if_skipping value_if_skipping]
-              (in-memory-pick-dolls dolls (- index 1) max-weight)
-              [dolls_if_keeping value_if_keeping]
-              (in-memory-pick-dolls dolls (- index 1) (- max-weight weight))]
-          ; note that dolls_if_keeping and value_if_keeping do not yet include
-          ; the current doll
-          (if (> (+ value_if_keeping value) value_if_skipping)
-            [(conj dolls_if_keeping doll) (+ value_if_keeping value)] ;add current doll
-            [dolls_if_skipping value_if_skipping]))))))
+        (in-memory-pick-dolls (rest dolls) max-weight) ;skip, doll too heavy
+        (let [[dolls_skip value_skip]
+              (in-memory-pick-dolls (rest dolls) max-weight) ;lookup with current weight
+              [dolls_keep value_keep]
+              (in-memory-pick-dolls (rest dolls) (- max-weight weight))] ;lookup without current doll's weight
+          (if (> (+ value_keep value) value_skip)
+            [(conj dolls_keep doll) (+ value_keep value)] ;add current doll
+            [dolls_skip value_skip])))))) ;return previous best doll
 
 ;cache the previous runs of pick-dolls in memory
 ;takes up more RAM, but saves processing.
@@ -58,7 +55,7 @@
 (defn get-dealer-inventory 
   "Get dealer inventory of dolls in the format of [Name Weight Value Name2 Weight2 Value2...]"
   []
-  (get-input "Input Dealer Inventory"))
+  (get-input "Input Dealer Inventory in the format of [Name Weight Value Name2 Weight2 Value2...]"))
 
 ;Helper method to return a vector in the format of the struct Doll
 (defn get-vector
@@ -72,14 +69,10 @@
   [dolls max-weight]
   (if(vector? dolls)
     (if(number? max-weight)
-      
-      (let [dolls (get-vector dolls)
-          num_of_dolls (count dolls)]
-        (in-memory-pick-dolls dolls (- num_of_dolls 1) max-weight))
+      (let [dolls (get-vector dolls)]
+        (in-memory-pick-dolls dolls max-weight))
       (do (println "Input max weight is not numeric")))
-    (do (println "Input doll data is not a vector or max weight is not integer "))
-    )
-)
+    (do (println "Input doll data is not a vector or max weight is not integer "))))
 
 ;Run this to input your own data.
 (defn run-solution[]
@@ -89,9 +82,10 @@
          results (fill-knapsack inventory grandma)]
      (println "Results:")
      (println "Dolls selected: ")
-     (doseq [result (first results)] 
+     (println "Name \t\t Weight \t\t Value")
+     (doseq [result (first results)]
        (println result))
-     (println "Total value: " (last results))
+     (println "\nTotal value: " (last results))
   ))
 
 ;Test Suite
@@ -100,8 +94,8 @@
     (let [good-test-weight 50
           good-test-dolls ['Brian 20 10]
           expected-good-value 10
-          large-test-data [ 'luke 9 150 
-                            'anthony 13 35
+          large-test-data [ 'luke        9   150 
+                            'anthony    13    35
                             'candice   153   200
 														'dorothy    50   160
 														'puppy      15    60
@@ -123,20 +117,21 @@
 														'sally       4    50
 														'babe       30    10]
           large-test-weight 400
-          large-expected-data ['luke        9   150 
-                               'anthony    13    35
-                               'candice   153   200
-                               'dorothy    50   160
-                               'puppy      15    60
-                               'randal     27    60
-                               'marc       11    70
-                               'grumpkin   42    70
-                               'dusty      43    75
-                               'grumpy     22    80
+          large-expected-data ['sally       4    50
                                'eddie       7    20
-                               'sally       4    50]
+                               'grumpy     22    80
+                               'dusty      43    75
+                               'grumpkin   42    70
+                               'marc       11    70
+                               'randal     27    60
+                               'puppy      15    60
+                               'dorothy    50   160
+                               'candice   153   200
+                               'anthony    13    35
+                               'luke        9   150]
           large-expected-value 1030
           zero-expected-count 0
+          empty-results-set [[] 0]
           
       ]
       (testing "Test suite"
@@ -152,9 +147,8 @@
         (testing "Test with non-vector input"
                  (is(= nil (fill-knapsack -1 123))))
         (testing "Test with empty set and 0 weight"
-                 (is(= [[] 0] (fill-knapsack [] 0)))) 
+                 (is(= empty-results-set (fill-knapsack [] 0)))) 
         (testing "Test with non-number input"
-                 (is(= nil (fill-knapsack good-test-dolls "abc"))))
-      )))
+                 (is(= nil (fill-knapsack good-test-dolls "abc")))))))
 
-
+(run-solution)
